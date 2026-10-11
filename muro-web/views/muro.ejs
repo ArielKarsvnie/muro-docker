@@ -6,60 +6,399 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laboratorio Docker</title>
     <style>
-        body { margin: 0; background: #eef1f5; font-family: system-ui, "Segoe UI", Roboto, sans-serif; color: #1f2328; }
-        .contenedor { max-width: 640px; margin: 40px auto; padding: 24px 28px 32px; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0, 0, 0, .08); }
-        h1 { text-align: center; color: #1d5c96; font-size: 2rem; margin: 0 0 24px; }
-        form.nuevo { display: grid; gap: 8px; }
-        input, textarea { font: inherit; padding: 10px; border: 1px solid #d0d7de; border-radius: 8px; }
-        textarea { min-height: 70px; resize: vertical; }
-        button { font: inherit; padding: 10px; border: none; border-radius: 8px; background: #1d5c96; color: #fff; cursor: pointer; }
-        hr { border: none; border-top: 1px solid #e3e6ea; margin: 24px 0; }
-        .error { text-align: center; color: #a3282c; font-weight: 600; }
-        .vacio { text-align: center; color: #57606a; }
-        .mensaje { border: 1px solid #e3e6ea; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; }
-        .mensaje header { display: flex; justify-content: space-between; align-items: baseline; }
-        .mensaje time { color: #57606a; font-size: .85rem; }
-        .mensaje p { margin: 6px 0 2px; overflow-wrap: anywhere; }
-        .mensaje form { text-align: right; }
-        .borrar { background: none; color: #a3282c; padding: 2px 6px; font-size: .85rem; }
+        :root {
+            --madera: #7A4E2D;
+            --madera-oscura: #5C3920;
+            --corcho: #C49A6C;
+            --tinta: #2B2620;
+            --tinta-suave: #5E554B;
+            --papel: #FFFDF7;
+            --ok: #2F7D3A;
+            --error: #B3261E;
+            --amarillo: #FFE58A;
+            --rosa: #FFC6D3;
+            --celeste: #BFE3F5;
+            --verde: #CDEBB7;
+            --lila: #DDCDF4;
+            --mano: "Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Neue", cursive;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--madera-oscura);
+            color: var(--tinta);
+            font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.45;
+        }
+
+        /* La cartelera: corcho con marco de madera */
+        .tablero {
+            max-width: 1180px;
+            margin: 24px auto;
+            padding: 32px clamp(16px, 4vw, 40px) 48px;
+            border: 14px solid var(--madera);
+            border-radius: 6px;
+            background-color: var(--corcho);
+            background-image:
+                radial-gradient(rgba(90, 55, 25, .28) 1px, transparent 1.6px),
+                radial-gradient(rgba(255, 235, 200, .25) 1px, transparent 1.4px);
+            background-size: 9px 9px, 13px 13px;
+            background-position: 0 0, 4px 6px;
+            box-shadow: inset 0 0 40px rgba(60, 35, 15, .45), 0 10px 30px rgba(0, 0, 0, .35);
+        }
+
+        /* Hoja impresa con el título */
+        .cabecera {
+            position: relative;
+            max-width: 640px;
+            margin: 0 auto 36px;
+            padding: 28px 32px 22px;
+            background: var(--papel);
+            transform: rotate(-.6deg);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, .06), 0 10px 18px rgba(60, 35, 15, .35);
+        }
+
+        .cabecera h1 {
+            margin: 0;
+            font-size: clamp(1.9rem, 4.5vw, 2.6rem);
+            line-height: 1.1;
+            letter-spacing: -.01em;
+            text-align: center;
+        }
+
+        .cabecera h1 u {
+            text-decoration-thickness: 3px;
+            text-underline-offset: 6px;
+        }
+
+        .cabecera .bajada {
+            margin: 10px 0 18px;
+            text-align: center;
+            color: var(--tinta-suave);
+        }
+
+        .estado {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px 20px;
+            margin: 0;
+            padding: 12px 0 0;
+            border-top: 1px dashed #D8CFC2;
+            list-style: none;
+            font-size: .9rem;
+            color: var(--tinta-suave);
+        }
+
+        .estado strong { color: var(--tinta); font-weight: 600; }
+
+        .punto {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            margin-right: 6px;
+            border-radius: 50%;
+            vertical-align: 1px;
+        }
+
+        .punto.on { background: var(--ok); box-shadow: 0 0 0 3px rgba(47, 125, 58, .18); }
+        .punto.off { background: var(--error); box-shadow: 0 0 0 3px rgba(179, 38, 30, .18); }
+
+        /* Notas pinchadas en el corcho */
+        .notas {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 34px 26px;
+            align-items: start;
+        }
+
+        .nota {
+            position: relative;
+            min-height: 170px;
+            padding: 30px 18px 14px;
+            background: var(--amarillo);
+            box-shadow: 0 1px 0 rgba(0, 0, 0, .08), 4px 10px 14px rgba(60, 35, 15, .35);
+            transform: rotate(var(--giro, 0deg));
+        }
+
+        /* La chinche */
+        .nota::before {
+            content: "";
+            position: absolute;
+            top: 9px;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            margin-left: -8px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #F28B82, #C62828 55%, #7F1414);
+            box-shadow: 1px 3px 3px rgba(0, 0, 0, .35);
+        }
+
+        .nota.rosa { background: var(--rosa); }
+        .nota.celeste { background: var(--celeste); }
+        .nota.verde { background: var(--verde); }
+        .nota.lila { background: var(--lila); }
+
+        .nota .texto {
+            margin: 0 0 14px;
+            font-family: var(--mano);
+            font-size: 1.08rem;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+            white-space: pre-line;
+        }
+
+        .nota .firma {
+            margin: 0;
+            font-family: var(--mano);
+            font-weight: 700;
+        }
+
+        .nota .pie {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(43, 38, 32, .14);
+            font-size: .82rem;
+            color: var(--tinta-suave);
+        }
+
+        .acciones { display: flex; gap: 4px; }
+        .acciones form { margin: 0; }
+
+        .boton-chico {
+            font: inherit;
+            padding: 3px 8px;
+            border: none;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .55);
+            color: var(--tinta);
+            cursor: pointer;
+        }
+
+        .boton-chico:hover { background: rgba(255, 255, 255, .9); }
+        .boton-chico.quitar { color: var(--error); }
+
+        /* Nota para escribir */
+        .nota.nueva {
+            background: var(--papel);
+        }
+
+        .nota.nueva h2 {
+            margin: 0 0 10px;
+            font-size: 1rem;
+        }
+
+        .nota.nueva form { display: grid; gap: 10px; }
+
+        .nota.nueva input[type="text"],
+        .nota.nueva textarea {
+            width: 100%;
+            padding: 6px 2px;
+            border: none;
+            border-bottom: 1px solid #C9BBA8;
+            background: transparent;
+            color: var(--tinta);
+            font-family: var(--mano);
+            font-size: 1rem;
+        }
+
+        .nota.nueva textarea { min-height: 84px; resize: vertical; line-height: 28px; }
+
+        .colores {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+
+        .colores legend {
+            float: left;
+            margin-right: 4px;
+            font-size: .85rem;
+            color: var(--tinta-suave);
+        }
+
+        .colores input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+
+        .colores label {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid rgba(43, 38, 32, .2);
+            cursor: pointer;
+        }
+
+        .colores input:checked + label { border-color: var(--tinta); box-shadow: 0 0 0 2px var(--papel), 0 0 0 4px var(--tinta); }
+        .colores input:focus-visible + label { outline: 2px solid var(--tinta); outline-offset: 3px; }
+
+        .enviar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .contador { font-size: .82rem; color: var(--tinta-suave); }
+        .contador.cerca { color: var(--error); }
+
+        .publicar {
+            font: inherit;
+            font-weight: 600;
+            padding: 8px 18px;
+            border: none;
+            border-radius: 6px;
+            background: var(--tinta);
+            color: var(--papel);
+            cursor: pointer;
+        }
+
+        .publicar:hover { background: #000; }
+
+        /* Avisos */
+        .aviso {
+            grid-column: 1 / -1;
+            max-width: 520px;
+            margin: 8px auto 0;
+            padding: 30px 26px 22px;
+            text-align: center;
+            --giro: .8deg;
+        }
+
+        .aviso.error { background: var(--papel); border-top: 6px solid var(--error); }
+        .aviso h2 { margin: 0 0 8px; font-size: 1.15rem; }
+        .aviso p { margin: 0; color: var(--tinta-suave); }
+        .aviso code { background: rgba(0, 0, 0, .06); padding: 1px 5px; border-radius: 4px; }
+
+        .vacio {
+            font-family: var(--mano);
+            font-size: 1.15rem;
+        }
+
+        :focus-visible { outline: 2px solid var(--tinta); outline-offset: 2px; }
+
+        /* La nota recién publicada se pincha con un pequeño movimiento */
+        .nota.recien { animation: pinchar .45s ease-out; }
+
+        @keyframes pinchar {
+            from { transform: translateY(-14px) rotate(calc(var(--giro, 0deg) - 4deg)); opacity: 0; }
+            to { transform: rotate(var(--giro, 0deg)); opacity: 1; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .nota.recien { animation: none; }
+        }
+
+        @media (max-width: 560px) {
+            .tablero { margin: 0; border-width: 8px; border-radius: 0; }
+            .cabecera { padding: 22px 18px 18px; }
+        }
     </style>
 </head>
 
 <body>
-    <div class="contenedor">
+    <main class="tablero">
 
-        <!-- Título de la página -->
-        <h1><u>Título de la página</u></h1>
+        <header class="cabecera">
+            <!-- Título de la página -->
+            <h1><u>Título de la página</u></h1>
+            <p class="bajada">Dejá un mensaje en la cartelera del laboratorio de Docker.</p>
+            <ul class="estado">
+                <% if (db_state == "on") { %>
+                    <li><span class="punto on"></span>Base de datos conectada</li>
+                    <li><strong><%= mensajes.length %></strong> <%= mensajes.length === 1 ? 'mensaje' : 'mensajes' %></li>
+                <% } else { %>
+                    <li><span class="punto off"></span>Sin base de datos</li>
+                <% } %>
+                <li>Contenedor <strong><%= hostname %></strong></li>
+            </ul>
+        </header>
 
-        <form class="nuevo" method="POST" action="/" autocomplete="off">
-            <input type="text" name="autor" placeholder="Tu nombre" maxlength="50">
-            <textarea name="texto" placeholder="Escribí un mensaje para el muro" maxlength="280" required></textarea>
-            <button type="submit">Publicar</button>
-        </form>
+        <section class="notas" aria-label="Mensajes del muro">
 
-        <hr>
+            <% if (db_state == "off") { %>
+                <div class="nota aviso error" role="alert">
+                    <h2>No se pudo conectar a la base de datos</h2>
+                    <p>El servidor intenta conectarse a <code>muro-db:27017</code> cada 3 segundos. Revisá que el contenedor de la base esté corriendo y en la misma red.</p>
+                </div>
+            <% } else { %>
 
-        <% if (db_state == "off") { %>
-            <div class="error">No se pudo conectar a la base de datos</div>
-        <% } else if (mensajes.length > 0) { %>
-            <% mensajes.forEach(m => { %>
-                <div class="mensaje">
-                    <header>
-                        <strong><%= m.autor %></strong>
-                        <time><%= m.created_at.toLocaleString('es-AR') %></time>
-                    </header>
-                    <p><%= m.texto %></p>
-                    <form method="POST" action="/mensaje/borrar">
-                        <input type="hidden" name="_key" value="<%= m._id %>">
-                        <button class="borrar" type="submit">Borrar</button>
+                <div class="nota nueva" style="--giro: -1deg">
+                    <h2>Escribí en el muro</h2>
+                    <form method="POST" action="/" autocomplete="off">
+                        <input type="text" name="autor" placeholder="Tu nombre" maxlength="40" aria-label="Tu nombre">
+                        <textarea name="texto" id="texto" placeholder="¿Qué querés contar?" maxlength="280" required aria-label="Mensaje"></textarea>
+                        <fieldset class="colores">
+                            <legend>Papel</legend>
+                            <% colores.forEach((c, i) => { %>
+                                <input type="radio" name="color" id="color-<%= c %>" value="<%= c %>" aria-label="Papel <%= c %>" <%= i === 0 ? 'checked' : '' %>>
+                                <label for="color-<%= c %>" title="<%= c %>" style="background: var(--<%= c %>)"></label>
+                            <% }) %>
+                        </fieldset>
+                        <div class="enviar">
+                            <span class="contador" id="contador" aria-live="polite">0 / 280</span>
+                            <button class="publicar" type="submit">Publicar</button>
+                        </div>
                     </form>
                 </div>
-            <% }) %>
-        <% } else { %>
-            <div class="vacio"><u>Todavía no hay mensajes.</u></div>
-        <% } %>
 
-    </div>
+                <% if (mensajes.length > 0) { %>
+                    <% mensajes.forEach((m, i) => { %>
+                        <%
+                            const giro = ((parseInt(String(m._id).slice(-2), 16) % 7) - 3) * 0.7;
+                            const esNueva = i === 0 && (Date.now() - new Date(m.created_at).getTime()) < 10000;
+                        %>
+                        <article class="nota <%= m.color %> <%= esNueva ? 'recien' : '' %>" style="--giro: <%= giro %>deg">
+                            <p class="texto"><%= m.texto %></p>
+                            <p class="firma">— <%= m.autor %></p>
+                            <div class="pie">
+                                <time datetime="<%= new Date(m.created_at).toISOString() %>" title="<%= new Date(m.created_at).toLocaleString('es-AR') %>"><%= hace(m.created_at) %></time>
+                                <div class="acciones">
+                                    <form method="POST" action="/mensaje/me-gusta">
+                                        <input type="hidden" name="_key" value="<%= m._id %>">
+                                        <button class="boton-chico" type="submit" aria-label="Me gusta">♥ <%= m.likes %></button>
+                                    </form>
+                                    <form method="POST" action="/mensaje/borrar">
+                                        <input type="hidden" name="_key" value="<%= m._id %>">
+                                        <button class="boton-chico quitar" type="submit" aria-label="Borrar mensaje">Borrar</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    <% }) %>
+                <% } else { %>
+                    <div class="nota celeste" style="--giro: 1.5deg">
+                        <p class="vacio"><u>Todavía no hay mensajes.</u></p>
+                        <p class="texto">Elegí un color de papel y publicá en la nota de la izquierda.</p>
+                    </div>
+                <% } %>
+
+            <% } %>
+        </section>
+
+    </main>
+
+    <script>
+        // Contador de caracteres del mensaje
+        const texto = document.getElementById('texto');
+        const contador = document.getElementById('contador');
+        if (texto && contador) {
+            texto.addEventListener('input', () => {
+                const n = texto.value.length;
+                contador.textContent = n + ' / 280';
+                contador.classList.toggle('cerca', n > 250);
+            });
+        }
+    </script>
 </body>
 
 </html>
