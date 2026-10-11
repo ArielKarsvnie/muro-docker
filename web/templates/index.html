@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muro de mensajes</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}">
+</head>
+<body>
+  <main>
+    <!-- TODO (Parte 2.4): cambiar este título -->
+    <h1>Mi aplicación</h1>
+
+    {% if error_db %}
+      <div class="alerta">
+        <strong>Sin conexión a la base de datos</strong>
+        <p>El servidor intentó conectarse a <code>{{ info.db_host }}</code> y falló:</p>
+        <code>{{ error_db }}</code>
+      </div>
+    {% else %}
+      <div class="ok">Base de datos conectada en <code>{{ info.db_host }}</code></div>
+
+      <form method="post" action="{{ url_for('agregar') }}">
+        <input name="autor" placeholder="Tu nombre" maxlength="50">
+        <textarea name="texto" placeholder="Escribí un mensaje..." maxlength="280" required></textarea>
+        <button type="submit">Publicar</button>
+      </form>
+
+      <section class="mensajes">
+        {% for m in mensajes %}
+          <article>
+            <header>
+              <strong>{{ m[1] }}</strong>
+              <time>{{ m[3].strftime('%d/%m %H:%M') }}</time>
+            </header>
+            <p>{{ m[2] }}</p>
+            <form method="post" action="{{ url_for('borrar', id_mensaje=m[0]) }}">
+              <button class="borrar" type="submit">Borrar</button>
+            </form>
+          </article>
+        {% else %}
+          <!-- TODO (Parte 4.3): cambiar este texto -->
+          <p class="vacio">Todavía no hay mensajes.</p>
+        {% endfor %}
+      </section>
+    {% endif %}
+
+    <footer>
+      <h2>¿Dónde estoy corriendo?</h2>
+      <dl>
+        <dt>Hostname</dt><dd><code>{{ info.hostname }}</code></dd>
+        <dt>PID del proceso</dt><dd><code>{{ info.pid }}</code> (padre: <code>{{ info.ppid }}</code>)</dd>
+        <dt>UID del usuario</dt><dd><code>{{ info.usuario }}</code></dd>
+        <dt>Versión</dt><dd><code>{{ info.version }}</code></dd>
+      </dl>
+    </footer>
+  </main>
+</body>
+</html>

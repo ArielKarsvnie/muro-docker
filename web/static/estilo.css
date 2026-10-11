@@ -1,0 +1,93 @@
+:root {
+  --fondo: #f4f1ea;
+  --tarjeta: #ffffff;
+  --texto: #1f2328;
+  --suave: #6b6f76;
+  --acento: #1d5c96;
+  --ok: #1f7a3a;
+  --error: #a3282c;
+  --borde: #ddd7cc;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+main { max-width: 640px; margin: 0 auto; padding: 32px 16px 48px; }
+
+h1 { font-size: 2rem; margin: 0 0 20px; color: var(--acento); }
+h2 { font-size: 1rem; margin: 0 0 8px; color: var(--suave); }
+
+code {
+  font-family: ui-monospace, Consolas, monospace;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.ok, .alerta {
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+.ok { background: #e3f2e7; color: var(--ok); }
+.alerta { background: #f9e3e3; color: var(--error); }
+.alerta p { margin: 6px 0; }
+
+form { display: grid; gap: 8px; margin-bottom: 24px; }
+
+input, textarea {
+  font: inherit;
+  padding: 10px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: var(--tarjeta);
+}
+textarea { min-height: 80px; resize: vertical; }
+
+button {
+  font: inherit;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: var(--acento);
+  color: #fff;
+  cursor: pointer;
+}
+
+.mensajes article {
+  background: var(--tarjeta);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.mensajes article header { display: flex; justify-content: space-between; gap: 8px; }
+.mensajes article time { color: var(--suave); font-size: 0.85rem; }
+.mensajes article p { margin: 6px 0 4px; word-wrap: break-word; }
+.mensajes article form { margin: 0; justify-items: end; }
+button.borrar {
+  background: transparent;
+  color: var(--error);
+  padding: 2px 6px;
+  font-size: 0.85rem;
+}
+.vacio { color: var(--suave); text-align: center; padding: 24px 0; }
+
+footer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--borde);
+  font-size: 0.9rem;
+}
+footer dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0; }
+footer dt { color: var(--suave); }
+footer dd { margin: 0; }
