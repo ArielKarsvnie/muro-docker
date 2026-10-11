@@ -1,7 +1,0 @@
-# Archivos que NO se copian a la imagen con COPY . .
-__pycache__/
-*.pyc
-.venv/
-venv/
-Dockerfile
-.dockerignore

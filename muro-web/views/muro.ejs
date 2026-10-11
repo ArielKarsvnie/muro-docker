@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio Docker</title>
+    <style>
+        body { margin: 0; background: #eef1f5; font-family: system-ui, "Segoe UI", Roboto, sans-serif; color: #1f2328; }
+        .contenedor { max-width: 640px; margin: 40px auto; padding: 24px 28px 32px; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0, 0, 0, .08); }
+        h1 { text-align: center; color: #1d5c96; font-size: 2rem; margin: 0 0 24px; }
+        form.nuevo { display: grid; gap: 8px; }
+        input, textarea { font: inherit; padding: 10px; border: 1px solid #d0d7de; border-radius: 8px; }
+        textarea { min-height: 70px; resize: vertical; }
+        button { font: inherit; padding: 10px; border: none; border-radius: 8px; background: #1d5c96; color: #fff; cursor: pointer; }
+        hr { border: none; border-top: 1px solid #e3e6ea; margin: 24px 0; }
+        .error { text-align: center; color: #a3282c; font-weight: 600; }
+        .vacio { text-align: center; color: #57606a; }
+        .mensaje { border: 1px solid #e3e6ea; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; }
+        .mensaje header { display: flex; justify-content: space-between; align-items: baseline; }
+        .mensaje time { color: #57606a; font-size: .85rem; }
+        .mensaje p { margin: 6px 0 2px; overflow-wrap: anywhere; }
+        .mensaje form { text-align: right; }
+        .borrar { background: none; color: #a3282c; padding: 2px 6px; font-size: .85rem; }
+    </style>
+</head>
+
+<body>
+    <div class="contenedor">
+
+        <!-- Título de la página -->
+        <h1><u>Título de la página</u></h1>
+
+        <form class="nuevo" method="POST" action="/" autocomplete="off">
+            <input type="text" name="autor" placeholder="Tu nombre" maxlength="50">
+            <textarea name="texto" placeholder="Escribí un mensaje para el muro" maxlength="280" required></textarea>
+            <button type="submit">Publicar</button>
+        </form>
+
+        <hr>
+
+        <% if (db_state == "off") { %>
+            <div class="error">No se pudo conectar a la base de datos</div>
+        <% } else if (mensajes.length > 0) { %>
+            <% mensajes.forEach(m => { %>
+                <div class="mensaje">
+                    <header>
+                        <strong><%= m.autor %></strong>
+                        <time><%= m.created_at.toLocaleString('es-AR') %></time>
+                    </header>
+                    <p><%= m.texto %></p>
+                    <form method="POST" action="/mensaje/borrar">
+                        <input type="hidden" name="_key" value="<%= m._id %>">
+                        <button class="borrar" type="submit">Borrar</button>
+                    </form>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <div class="vacio"><u>Todavía no hay mensajes.</u></div>
+        <% } %>
+
+    </div>
+</body>
+
+</html>

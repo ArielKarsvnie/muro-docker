@@ -1,37 +1,12 @@
 # Muro de mensajes — Laboratorio de Docker
 
-Sistemas Operativos · FACET · UNT
+Repositorio para el laboratorio de Docker y contenedores de Sistemas Operativos, FACET UNT.
 
-Aplicación de prueba para el laboratorio de contenedores. Consta de dos partes:
+La aplicación de prueba es un muro de mensajes:
 
-- **web/**: backend en Python (Flask) que muestra un muro de mensajes y recibe peticiones HTTP en el puerto 5000.
-- **db/**: script de inicialización para una base de datos PostgreSQL donde se guardan los mensajes.
+- **muro-web/**: backend en Node.js (Express + EJS) que recibe las peticiones HTTP en el puerto 3000. Usa nodemon y livereload (puerto 35729) para recargar la página cuando cambia el código.
+- **Base de datos MongoDB**: almacena los mensajes que envía el backend. La vas a crear durante el laboratorio en la carpeta `muro-db/`.
 
-Durante el laboratorio vas a escribir los `Dockerfile` de cada parte y el archivo `compose.yaml` que las une. El repositorio **no** los incluye.
+La dirección de la base de datos está en `muro-web/config/keys.js` (`mongodb://muro-db:27017/muro`): el host debe coincidir con el nombre del contenedor de la base.
 
-## Estructura
-
-```
-muro-docker/
-├── web/
-│   ├── app.py              # servidor Flask
-│   ├── requirements.txt    # dependencias de Python
-│   ├── .dockerignore       # archivos que no se copian a la imagen
-│   ├── templates/index.html
-│   └── static/estilo.css
-└── db/
-    └── init.sql            # crea la tabla y un mensaje de bienvenida
-```
-
-## Variables de entorno del backend
-
-| Variable       | Valor por defecto | Para qué sirve                          |
-|----------------|-------------------|-----------------------------------------|
-| `DB_HOST`      | `muro-db`         | Nombre (o IP) del servidor de la base   |
-| `DB_PORT`      | `5432`            | Puerto de PostgreSQL                    |
-| `DB_NAME`      | `muro`            | Nombre de la base de datos              |
-| `DB_USER`      | `postgres`        | Usuario de la base                      |
-| `DB_PASSWORD`  | `postgres`        | Contraseña de la base                   |
-| `APP_VERSION`  | `sin definir`     | Texto que se muestra al pie de la página|
-
-No hace falta instalar Python ni PostgreSQL en tu computadora: todo corre dentro de contenedores.
+Los `Dockerfile` y el `compose.yml` los escribís vos siguiendo la guía del laboratorio. No hace falta instalar Node.js ni MongoDB en tu computadora.
